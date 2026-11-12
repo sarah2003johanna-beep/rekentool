@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maximale hypotheek berekenen | SFEMinor3</title>
+<style>
+:root{--green:#247b68;--green-dark:#185b4d;--ink:#20312e;--muted:#687873;--line:#dce7e2;--soft:#f3f8f5;--white:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7f6;color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.5}
+.wrap{max-width:900px;margin:36px auto;padding:0 18px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:clamp(22px,4vw,42px);box-shadow:0 10px 35px rgba(24,60,48,.06)}
+.kicker{color:var(--green);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:clamp(2rem,5vw,2.8rem);line-height:1.1;margin:10px 0 12px}
+.intro{color:var(--muted);max-width:650px;margin:0 0 28px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.field{display:flex;flex-direction:column;gap:7px}
+label{font-weight:700;font-size:.94rem}
+input,select{width:100%;padding:13px 14px;border:1px solid #cbd9d3;border-radius:10px;font:inherit;color:var(--ink);background:#fff}
+input:focus,select:focus{outline:3px solid rgba(36,123,104,.15);border-color:var(--green)}
+.help{font-size:.82rem;color:var(--muted)}
+.hidden{display:none!important}
+.actions{margin-top:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+button{background:var(--green);color:white;border:0;border-radius:10px;padding:14px 22px;font-weight:700;font-size:1rem;cursor:pointer}
+button:hover{background:var(--green-dark)}
+.result{display:none;margin-top:28px;padding:24px;border-radius:14px;background:var(--soft);border:1px solid #d5e6de}
+.result.show{display:block}
+.result-label{color:var(--muted);font-size:.9rem}
+.amount{font-size:clamp(2rem,6vw,3rem);font-weight:800;color:var(--green-dark);margin:2px 0 10px;letter-spacing:-.03em}
+.result p{margin:8px 0;color:var(--muted)}
+.notice{margin-top:22px;padding:16px;border-left:4px solid #d3a34a;background:#fff9ec;border-radius:8px;font-size:.88rem;color:#665536}
+.footer{margin-top:18px;color:var(--muted);font-size:.78rem}
+a{color:var(--green-dark)}
+@media(max-width:620px){.grid{grid-template-columns:1fr}.wrap{margin:18px auto}.card{border-radius:14px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<section class="card">
+  <div class="kicker">SFEMinor3 · Hypotheekadvies</div>
+  <h1>Wat kun jij maximaal lenen?</h1>
+  <p class="intro">Vul je inkomen en de gewenste hypotheekrente in en krijg een eerste indicatie van je maximale hypotheek.</p>
+
+  <form id="mortgageForm">
+    <div class="grid">
+      <div class="field">
+        <label for="situation">Wat is jouw situatie?</label>
+        <select id="situation">
+          <option value="single">Ik koop alleen</option>
+          <option value="couple">Ik koop samen</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="income1">Bruto jaarinkomen aanvrager 1 (€)</label>
+        <input id="income1" type="number" min="0" max="125000" step="100" placeholder="Bijv. 45.000" required>
+        <span class="help">Gebruik het toetsinkomen: doorgaans het vaste bruto jaarinkomen inclusief vaste loonbestanddelen.</span>
+      </div>
+      <div class="field hidden" id="partnerField">
+        <label for="income2">Bruto jaarinkomen aanvrager 2 (€)</label>
+        <input id="income2" type="number" min="0" max="125000" step="100" placeholder="Bijv. 35.000">
+      </div>
+      <div class="field">
+        <label for="rate">Hypotheekrente (%)</label>
+        <input id="rate" type="number" min="4.5" max="5" step="0.01" value="5.00" required>
+        <span class="help">Deze prototypeversie rekent met de 2026-normkolom 4,501–5,000%.</span>
+      </div>
+      <div class="field">
+        <label for="debts">Maandelijkse aflossing op leningen/schulden (€)</label>
+        <input id="debts" type="number" min="0" max="10000" step="10" value="0">
+        <span class="help">Wordt in deze eerste prototypeversie nog niet in de uitkomst verwerkt.</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit">Bereken mijn indicatie</button>
+    </div>
+  </form>
+
+  <section class="result" id="result" aria-live="polite">
+    <div class="result-label">Jouw indicatieve maximale hypotheek</div>
+    <div class="amount" id="amount">—</div>
+    <p id="details"></p>
+    <p><strong>Let op:</strong> dit is een prototype-indicatie en geen hypotheekadvies of aanbod.</p>
+  </section>
+
+  <div class="notice">
+    <strong>Belangrijk – testversie</strong><br>
+    Deze eerste versie gebruikt een beperkte selectie van financieringslastpercentages uit de 2026-tabel en rekent met een annuïtaire looptijd van 30 jaar en een toetsrente van 5%. De percentages tussen de opgenomen inkomenspunten worden benaderd. Studieschulden en andere leningen, de extra leencapaciteit voor alleenstaanden, energielabel, leeftijd/AOW en bijzondere inkomenssituaties zijn nog niet volledig verwerkt. Gebruik de uitkomst daarom uitsluitend om het ontwerp en de werking te testen. Publiceer deze versie nog niet als betrouwbare hypotheekberekening.
+  </div>
+  <div class="footer">
+    Normatieve basis: Tijdelijke regeling hypothecair krediet 2026, Bijlage 1 (consumenten onder de AOW-leeftijd). De toetsrente voor rentevaste perioden korter dan 10 jaar bedraagt in het vierde kwartaal van 2026 5%.<br>
+    Bronnen:
+    <a href="https://zoek.officielebekendmakingen.nl/stcrt-2025-36471.html" target="_blank" rel="noopener">Staatscourant 2025, 36471</a> ·
+    <a href="https://www.afm.nl/nl-nl/sector/actueel/2026/sep/sb-toetsrente" target="_blank" rel="noopener">AFM toetsrente Q4 2026</a>
+  </div>
+</section>
+</main>
+<script>
+const form = document.getElementById('mortgageForm');
+const situation = document.getElementById('situation');
+const partnerField = document.getElementById('partnerField');
+const income2 = document.getElementById('income2');
+
+situation.addEventListener('change', () => {
+  const couple = situation.value === 'couple';
+  partnerField.classList.toggle('hidden', !couple);
+  income2.required = couple;
+  if (!couple) income2.value = '';
+});
+
+// Selected 2026 non-AOW financing burden percentages, 4.501–5.000% column.
+// Intermediate incomes are linearly interpolated for this design prototype only.
+const normPoints = [
+ [30000,21.6],[35000,24.6],[40000,24.6],[45000,24.6],[50000,24.6],
+ [55000,24.6],[60000,24.6],[65000,24.7],[70000,25.3],[75000,26.4],
+ [80000,27.2],[85000,27.4],[90000,27.6],[95000,27.8],[100000,28.0],
+ [105000,28.2],[110000,28.5],[115000,28.7],[120000,28.9],[125000,29.2]
+];
+function percentageFor(income){
+  if(income <= normPoints[0][0]) return normPoints[0][1];
+  if(income >= normPoints[normPoints.length-1][0]) return normPoints[normPoints.length-1][1];
+  for(let i=0;i<normPoints.length-1;i++){
+    const [x1,y1]=normPoints[i], [x2,y2]=normPoints[i+1];
+    if(income>=x1 && income<=x2) return y1+(y2-y1)*(income-x1)/(x2-x1);
+  }
+  return 0;
+}
+function euro(value){
+  return new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(value);
+}
+form.addEventListener('submit',(event)=>{
+  event.preventDefault();
+  const first = Number(document.getElementById('income1').value);
+  const second = situation.value==='couple' ? Number(income2.value) : 0;
+  const rate = Number(document.getElementById('rate').value);
+  const debts = Number(document.getElementById('debts').value)||0;
+  const total = first+second;
+  if(!first || first<0 || (situation.value==='couple' && !second) || total<30000 || total>125000){
+    alert('Vul geldige bruto jaarinkomens in. Deze prototypeversie ondersteunt een gezamenlijk toetsinkomen van € 30.000 tot € 125.000.');
+    return;
+  }
+  if(rate<4.5 || rate>5){
+    alert('Deze prototypeversie ondersteunt alleen een rente tussen 4,50% en 5,00%.');
+    return;
+  }
+  const flp = percentageFor(total)/100;
+  const allowedMonthly = total*flp/12;
+  const monthlyRate = 0.05/12;
+  const months = 30*12;
+  const annuityFactor = (1-Math.pow(1+monthlyRate,-months))/monthlyRate;
+  const mortgage = allowedMonthly*annuityFactor;
+  document.getElementById('amount').textContent=euro(mortgage);
+  document.getElementById('details').textContent =
+    `Gezamenlijk bruto jaarinkomen: ${euro(total)}. Gebruikt financieringslastpercentage (benaderd): ${(flp*100).toFixed(1).replace('.',',')}%. De berekening gebruikt 5% toetsrente en 30 jaar annuïtair. ` +
+    (debts>0 ? `Je hebt € ${debts.toLocaleString('nl-NL')} aan maandelijkse verplichtingen ingevuld; deze zijn nog niet verrekend.` : 'Er zijn geen maandelijkse verplichtingen ingevuld.');
+  document.getElementById('result').classList.add('show');
+  document.getElementById('result').scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+</script>
+</body>
+</html>
